@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# (re)generate a playlist of all tracks that don't yet have a rating
+# if you are using a shell that supports anonymous named pipes
+# (bash, korn, zsh, etc.), then just do the following:
+# comm -23 <(mpc listall | sort) <(mpc sticker "" find rating | awk -NF : '{print $1}' | sort)
+
+# 1. if a named pipe for term-dmenu doesn't exist, create it
+rated_tracks=/tmp/generate-unrated-playlist
+[ -p "$rated_tracks" ] || mkfifo "$rated_tracks"
+
+# 2. save list of tracks that have a rating to named pipe
+mpc sticker "" find rating | awk -NF : '{print $1}' | sort >"$rated_tracks" &
+# 3. remove tracks with stickers from the list of all tracks in the library.
+mpc listall | sort | comm -23 - "$rated_tracks"
+
+# cleanup
+rm "$rated_tracks"
+
+# vi:ft=sh
