@@ -4,7 +4,7 @@
 # appear twice, etc. all the way to tracks rated 10 appearing 4 times.
 # The playlist is printed to stdout.
 
-i=6
+i=7
 unsorted_tracks() {
 	while [ "$i" -le 10 ]; do
 		mpd-playlist-above-rating "$i"
