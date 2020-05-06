@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Set the "rating" sticker for the current track to the first arg.
+# provide a second argument to copy a message to share the rating on IRC
+
+mpc-sticker set rating "$1"
+
+if [ -n "$2" ]; then
+	mpc current -f "/me just rated \"%title%\" by %artist% $(now-playing-rating | sd 'rating=' '')/10" | wl-copy -n -t text/plain
+	wl-paste
+fi
+
+# vi:ft=sh

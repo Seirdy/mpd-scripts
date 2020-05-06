@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Have mpc query stickers for the currently-playing file
+
+mpc sticker "$(mpc current -f '%file%')" "$@"
+
+# vi:ft=sh

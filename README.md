@@ -58,3 +58,10 @@ is greater). As a result, tracks must contain a rating of at least 6 to be added
 Tracks rated 6/10 appear once, while tracks rated 10/10 appear four times. The higher
 you rate a track, the more likely it is to be played on shuffle. It requires
 `mpd-playlist-above-rating`.
+
+Now Playing
+-----------
+
+Scripts in the `now-playing` directory operate on the current track. They display the
+currently-playing track with some extra info, get/set the track's rating and other
+stickers, etc.

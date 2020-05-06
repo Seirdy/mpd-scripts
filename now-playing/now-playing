@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# This script is just `mpc status` with a more detailed format string
+# along with the song rating.
+# the format string is based on ncmpcpp's status
+
+formatstr='[%name%: &[%artist% ["%album%"] [(%date%)] - ]%title%]|%name%|[%artist% "[%album%]" [(%date%)] - ]%title%|%file%'
+
+mpc status -f "$formatstr"
+now-playing-rating
+
+# vi:ft=sh

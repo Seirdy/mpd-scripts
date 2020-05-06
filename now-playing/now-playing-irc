@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# `mpc status` with a format string for IRC
+
+mpc current -f '/me is listening to "%title%" by %artist%' | wl-copy -n -t text/plain
+wl-paste
+# vi:ft=sh

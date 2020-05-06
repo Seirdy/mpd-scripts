@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# displays the rating of the curently playing track
+# prints "unrated" if the current track doesn't have a "rating" sticker.
+
+mpc-sticker get rating 2>&1 \
+	| grep -v '^MPD error: no such sticker$' || echo 'unrated'
+
+# vi:ft=sh
