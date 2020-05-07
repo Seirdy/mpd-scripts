@@ -1,12 +1,15 @@
 #!/bin/sh
 
 # Set the "rating" sticker for the current track to the first arg.
-# provide a second argument to copy a message to share the rating on IRC
+# provide a second argument to copy a message for IRC telling everyone
+# exactly how much you love this track. This automatically happens for
+# ratings of 9 or 10.
 
 mpc-sticker set rating "$1"
 
-if [ -n "$2" ]; then
-	mpc current -f "/me just rated \"%title%\" by %artist% $(now-playing-rating | sd 'rating=' '')/10" | wl-copy -n -t text/plain
+if [ "$1" -ge '9' ] || [ -n "$2" ]; then
+	formatstr="/me just rated \"%title%\" by %artist% $(now-playing-rating | sed 's/rating=//')/10"
+	mpc current -f "$formatstr" | wl-copy -n -t text/plain
 	wl-paste
 fi
 
