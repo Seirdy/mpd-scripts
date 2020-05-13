@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Add the current track to a playlist
+# create the playlist if it doesn't exist
+# This assumes that playlists are stored in "$XDG_DATA_HOME/mpd/playlist"
+
+current_track="$(mpc current -f '%file%')"
+playlist="${XDG_DATA_HOME-${HOME-~}/.local/share}/mpd/playlist/$1.m3u"
+
+if grep "$current_track" "$playlist" >/dev/null; then
+	echo 'Track is already in target playlist'
+	exit 1
+fi
+
+printf 'Adding "' \
+	&& printf '%s' "$current_track" | tee -a "$playlist" \
+	&& printf '" to %s\n' "$1.m3u" \
+	&& printf '\n' >>"$playlist"
+
+# vi:ft=sh
