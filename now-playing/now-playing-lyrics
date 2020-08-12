@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Uses `exiftool` to display the contents of the "$Lyrics" tag from the song's file.
+
+# shellcheck disable=SC2016  # '$Lyrics' isn't a shell expression
+exiftool -q -p '$Lyrics' "$HOME/Music/$(mpc current -f '%file%')"
+
+# vi:ft=sh
