@@ -1,13 +1,36 @@
 #!/bin/sh
 
 # Set the "rating" sticker for the current track to the first arg.
-# provide a second argument to copy a message for IRC telling everyone
-# exactly how much you love this track. This automatically happens for
-# ratings of 9 or 10.
+# if the track is rated high enough or if a second arg is provided,
+# copy a message to share on IRC
+
+set -e
 
 mpc-sticker set rating "$1"
 
-if [ "$1" -ge '9' ] || [ -n "$2" ]; then
+# write rating to track metadata
+# media players often have exactly two digits after the decimal point and a leading 0.
+fmps_rating="$(echo "scale=2; x=$1/10; if(x<1) print 0; x" | bc)"
+file_path="$(mpc current -f "$HOME/Music/%file%")"
+file_ext="${file_path##*.}"
+case "$file_ext" in
+	flac)
+		if command -v metaflac >/dev/null; then
+			metaflac --remove-tag=FMPS_RATING "$file_path"
+			metaflac --set-tag=FMPS_RATING="$fmps_rating" "$file_path"
+		fi
+		;;
+	mp3)
+		if command -v mid3v2 >/dev/null; then
+			mid3v2 --TXXX "FMPS_RATING:$fmps_rating" "$file_path"
+		fi
+		;;
+	*)
+		echo "don't know how to write tags to this file format" 1>&2
+		;;
+esac
+
+if [ "$1" -ge '7' ] || [ -n "$2" ]; then
 	formatstr="/me just rated \"%title%\" by %artist% $(now-playing-rating | sed 's/rating=//')/10"
 	mpc current -f "$formatstr" | wl-copy -n -t text/plain
 	wl-paste
