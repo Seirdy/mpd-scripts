@@ -4,10 +4,14 @@
 # by default it only lists tracks I've rated 8 or higher
 
 # shellcheck disable=SC2016
-formatstr='$Title by $Artist'
-
-mpd-playlist-above-rating "${1:-8}" \
-	| xargs -P"$(($(nproc) / 2))" -d '\n' -I _ exiftool -q -p "$formatstr" "$HOME/Music/_" \
-	| ssh seirdy@envs.sh tee /home/seirdy/public_html/music.txt /home/seirdy/public_gopher/music.txt /home/seirdy/public_gemini/music.txt
+playlist() {
+	date -u +"# last updated %Y-%m-%dT%H:%M:%S%:z"
+	mpd-playlist-above-rating "$1" \
+		| sed -e "s#^#$HOME/Music/#g" \
+		| xargs -d '\n' exiftool -q -p '$Artist - $Title' \
+		| sort
+}
+playlist "${1:-8}" | ssh seirdy@envs.sh \
+	tee /home/seirdy/public_html/music.txt /home/seirdy/public_gopher/music.txt /home/seirdy/public_gemini/music.txt
 
 # vi:ft=sh
