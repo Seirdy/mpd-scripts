@@ -3,10 +3,16 @@
 # Shows the current track playing along with its rating.
 # Updates on player/sticker events.
 
+tput civis
+cleanup() {
+	tput cnorm
+}
+trap cleanup EXIT
 while true; do
+	clear
 	now-playing
 	# horizontal line (boxdraw)
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | sed 's/\s/─/g'
+	# printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | sed 's/\s/─/g'
 	# wait for event
 	mpc idle player sticker >/dev/null
 done
