@@ -3,7 +3,8 @@
 
 # background services
 systemctl start --user mpd
-systemctl start --user mpDris2
+systemctl start --user mpd-mpris
+kunst --notify
 
 # frontend programs
 # vi:ft=sh
