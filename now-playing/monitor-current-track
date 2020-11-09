@@ -3,14 +3,18 @@
 # Shows the current track playing along with its rating.
 # Updates on player/sticker events.
 
+# hide the cursor while running
 tput civis
 cleanup() {
 	tput cnorm
 }
+
 trap cleanup EXIT
 while true; do
 	clear
-	now-playing
+	now-playing "$@"
+	echo
+	mpc status -f '' | sed -n 3p
 	# horizontal line (boxdraw)
 	# printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | sed 's/\s/─/g'
 	# wait for event

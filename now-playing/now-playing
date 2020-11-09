@@ -1,12 +1,56 @@
 #!/bin/sh
 
-# This script is just `mpc status` with a more detailed format string
+# This script is similar to `mpc status` but with more details
 # along with the song rating.
-# the format string is based on ncmpcpp's status
 
-formatstr='[%name%: &[%artist% ["%album%"] [(%date%)] - ]%title%]|%name%|[%artist% "[%album%]" [(%date%)] - ]%title%|%file%'
+# the only option is "-v" for more info
+if [ "$1" = '-v' ]; then
+	moar_info=1
+fi
 
-mpc status -f "$formatstr"
-now-playing-rating
+# print one piece of metadata, preceeded by a prefix (e.g. "Title: ")
+# silently do nothing if that metadata cannot be found
+get_metadata() {
+	prefix=$1
+	formatstr=$2
+	metadata_found="$(mpc current -f "$formatstr" 2>/dev/null)"
+	[ "$metadata_found" = '' ] || printf "%s%s\n" "$prefix" "$metadata_found"
+}
+
+# print the title, album, and artist
+get_all_metadata() {
+	# Format strings to use with `mpc current`
+	title='%title%|%name%'
+	album_date='["%album%" [(%date%)|(%originaldate%)]]|["%album%"]'
+	artist='%artist%|%albumartist%|%composer%'
+
+	get_metadata 'Title:   ' "$title"
+	get_metadata 'Album:   ' "$album_date"
+	get_metadata 'Artist:  ' "$artist"
+	if [ -n "$moar_info" ]; then
+		get_metadata 'Genre:   ' '%genre%'
+		get_metadata 'Comment: ' '%comment%'
+	fi
+}
+
+# same as above, but fallback to a file path and include the track rating
+print_track_info() {
+	# fallback to printing the file path if we find no metadata
+	track_metadata="$(get_all_metadata)"
+	if [ -z "$track_metadata" ]; then
+		mpc current -f '%file%'
+	else
+		echo "$track_metadata"
+	fi
+	# also include the song rating
+	rating="$(now-playing-rating)"
+	if [ "$rating" = 'unrated' ]; then
+		echo "Rating:  unrated"
+	else
+		echo "$rating" | sed -e 's/^rating=/Rating:  /' -e 's|$|/10|'
+	fi
+}
+
+print_track_info
 
 # vi:ft=sh
