@@ -2,6 +2,16 @@
 
 # `mpc status` with a format string for IRC
 
-mpc current -f '/me is listening to "%title%" by %artist%' | wl-copy -n -t text/plain
-wl-paste
+rating="$(now-playing-rating)"
+current="$(mpc current -f '/me is listening to "%title%" by %artist%')"
+print_info() {
+	if [ "$rating" = 'unrated' ]; then
+		echo "$current"
+	else
+		rating_str="$(printf '%s' "$rating" | sed -e 's/^rating=/rated  /' -e 's|$|/10|')"
+		printf '%s (%s)\n' "$current" "$rating_str"
+	fi
+}
+# wlcv copies stdin to clipboard + prints stdin
+print_info | wlcv
 # vi:ft=sh
