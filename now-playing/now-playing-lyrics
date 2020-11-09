@@ -1,8 +1,74 @@
 #!/bin/sh
 
-# Uses `exiftool` to display the contents of the "$Lyrics" tag from the song's file.
+# tries to find lyrics offline.
+# order of precedence:
+#  1. synchronized .lrc file
+#  2. lyric metadata embedded in file tags
+#  3. lyrics found by ncmpcpp saved as plaintext in $XDG_DATA_HOME/mpd/lyrics
 
-# shellcheck disable=SC2016  # '$Lyrics' isn't a shell expression
-exiftool -q -p '$Lyrics' "$HOME/Music/$(mpc current -f '%file%')"
+# preliminaries {{{
+set -e
+
+if [ "$1" = '-v' ]; then
+	verbose=1
+fi
+
+log() {
+	[ -n "$verbose" ] && echo "$@" 1>&2
+}
+# }}}
+
+# Save the relevant file paths for this script {{{
+music_filepath="$HOME/Music/$(mpc current -f '%file%')"
+# synchronized lyrics come with the tracks.
+# "plain" lyrics are downloaded by programs like ncmpcpp on demand
+# both are saved alongside music files, with different file extensions.
+lrc_filepath="${music_filepath%.*}.lrc"
+plain_lyric_filepath="${music_filepath%.*}.txt"
+# }}}
+
+# print_lyric_metadata extracts+prints embedded lyrics from tags found by exiftool
+# errors if the $Lyrics metadata tag doesn't exist or is empty
+print_lyric_metadata() {
+	# shellcheck disable=SC2016  # '$Lyrics' isn't a shell expression
+	lyric_metadata="$(exiftool -m -q -p '$Lyrics' "$music_filepath" 2>/dev/null)"
+	if [ "$lyric_metadata" != '' ]; then
+		log 'found embedded lyrics'
+		echo "$lyric_metadata"
+		exit 0
+	else
+		return 1
+	fi
+}
+
+# Format synchronized .lrc lyrics.
+# This does not error like print_lyric_metadata if the lyrics aren't found since it
+# should only be called if we know for sure the lyric filepath exists
+print_synchronized_lyrics() {
+	if [ -f "$lrc_filepath" ]; then
+		log 'found synchonized lyrics'
+		# strip off the timestamps, leaving just the unsynchronized lyrics
+		sed -e 's/^\[[0-9:\.]*\]//g' <"$lrc_filepath"
+		exit 0
+	else
+		return 1
+	fi
+}
+
+# ncmpcpp often finds the wrong lyrics, so this is a last resort.
+print_plain_lyrics() {
+	if [ -f "$plain_lyric_filepath" ]; then
+		log 'found plain lyrics'
+		cat "$plain_lyric_filepath"
+		exit 0
+	else
+		return 1
+	fi
+}
+
+print_synchronized_lyrics \
+	|| print_lyric_metadata \
+	|| print_plain_lyrics \
+	|| log 'lyrics not found' && exit 1
 
 # vi:ft=sh
