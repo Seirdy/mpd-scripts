@@ -3,6 +3,7 @@
 # Uploads a formatted list of my favorite tracks to https://envs.net/~seirdy/music.txt
 # by default it only lists tracks I've rated 8 or higher
 
+set -e
 # shellcheck disable=SC2016
 playlist() {
 	date -u +"# last updated %Y-%m-%dT%H:%M:%S%:z"
@@ -10,8 +11,9 @@ playlist() {
 		| sed -e "s#^#$HOME/Music/#g" \
 		| xargs -d '\n' exiftool -q -p '$Artist - $Title' \
 		| sort
+	echo "generated playlist" 1>&2
 }
-playlist "${1:-8}" | ssh seirdy@envs.sh \
-	tee /home/seirdy/public_html/music.txt /home/seirdy/public_gopher/music.txt /home/seirdy/public_gemini/music.txt
-
+playlist "${1:-8}" | pee \
+	'ssh seirdy@envs.net tee /home/seirdy/public_html/music.txt /home/seirdy/public_gemini/music.txt >/dev/null' \
+	'ssh deploy@seirdy.one tee /var/www/seirdy.one/music.txt /srv/gemini/seirdy.one/music.txt'
 # vi:ft=sh
