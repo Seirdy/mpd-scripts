@@ -8,29 +8,19 @@ if [ "$1" = '-v' ]; then
 	moar_info=1
 fi
 
-# print one piece of metadata, preceeded by a prefix (e.g. "Title: ")
-# silently do nothing if that metadata cannot be found
-get_metadata() {
-	prefix=$1
-	formatstr=$2
-	metadata_found="$(mpc current -f "$formatstr" 2>/dev/null)"
-	[ "$metadata_found" = '' ] || printf "%s%s\n" "$prefix" "$metadata_found"
-}
-
+title='%title%|%name%'
+album_date='["%album%" [(%date%)|(%originaldate%)]]|["%album%"]'
+artist='%artist%|%albumartist%|%composer%'
+formatstr="Title:   [$title]
+Album:   [$album_date]
+Artist:  [$artist]"
+[ -n "$moar_info" ] && formatstr="$formatstr
+Genre:   %genre%
+Comment: %comment%"
 # print the title, album, and artist
-get_all_metadata() {
-	# Format strings to use with `mpc current`
-	title='%title%|%name%'
-	album_date='["%album%" [(%date%)|(%originaldate%)]]|["%album%"]'
-	artist='%artist%|%albumartist%|%composer%'
 
-	get_metadata 'Title:   ' "$title"
-	get_metadata 'Album:   ' "$album_date"
-	get_metadata 'Artist:  ' "$artist"
-	if [ -n "$moar_info" ]; then
-		get_metadata 'Genre:   ' '%genre%'
-		get_metadata 'Comment: ' '%comment%'
-	fi
+get_all_metadata() {
+	mpc current -f "$formatstr" 2>/dev/null | grep -v '^[a-zA-Z]*:\s*$'
 }
 
 # same as above, but fallback to a file path and include the track rating
