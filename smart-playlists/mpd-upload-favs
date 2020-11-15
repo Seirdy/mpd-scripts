@@ -5,15 +5,25 @@
 
 set -e
 # shellcheck disable=SC2016
-playlist() {
-	date -u +"# last updated %Y-%m-%dT%H:%M:%S%:z"
+make_playlist_content() {
 	mpd-playlist-above-rating "$1" \
 		| sed -e "s#^#$HOME/Music/#g" \
 		| xargs -d '\n' exiftool -q -p '$Artist - $Title' \
 		| sort
-	echo "generated playlist" 1>&2
 }
-playlist "${1:-8}" | pee \
-	'ssh seirdy@envs.net tee /home/seirdy/public_html/music.txt /home/seirdy/public_gemini/music.txt >/dev/null' \
-	'ssh deploy@seirdy.one tee /var/www/seirdy.one/music.txt /srv/gemini/seirdy.one/music.txt'
+playlist() {
+	date -u +"# last updated %Y-%m-%dT%H:%M:%S%:z"
+	playlist_content="$(make_playlist_content "$1")"
+	echo 'generated playlist content' 1>&2
+	playlist_length="$(echo "$playlist_content" | wc -l)"
+	total_tracks_rated="$(mpd-playlist-above-rating 1 | wc -l)"
+	printf "# %s tracks 8/10 or higher listed below\n# out of %s total rated tracks\n" \
+		"$playlist_length" "$total_tracks_rated"
+	echo "$playlist_content"
+	echo 'done making playlist' 1>&2
+}
+playlist "${1:-8}"
+# playlist "${1:-8}" | pee \
+# 	'ssh seirdy@envs.net tee /home/seirdy/public_html/music.txt /home/seirdy/public_gemini/music.txt >/dev/null' \
+# 	'ssh deploy@seirdy.one tee /var/www/seirdy.one/music.txt /srv/gemini/seirdy.one/music.txt'
 # vi:ft=sh
