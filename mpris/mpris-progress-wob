@@ -1,0 +1,55 @@
+#!/bin/sh
+# Display current MPRIS track prgress in wob, a floating Wayland progress meter
+
+# the name of this program
+progname="$(basename "${0}")"
+
+help_text="Usage: $progname [OPTION...]
+
+Display current MPRIS track progress in wob.
+
+Options:
+  -d, --duration        Specify the duration to display wob
+  -h, --help            Print this help and exit
+"
+
+usage() {
+	printf '%s' "$help_text"
+}
+
+# when the user passess bad args, send a msg to stderr and exit
+# usage: bad_option <option> <reason>
+bad_option() {
+	echo "$progname: option $1: $2" >&2
+	usage >&2
+	exit 1
+}
+
+# parse arguments
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-h | --help)
+			usage
+			exit 0
+			;;
+		-d | --duration )
+			shift
+			duration="$1"
+			;;
+		*)
+			bad_option "$1" 'invalid option'
+			;;
+	esac
+	shift
+done
+
+[ -z "$duration" ] && duration=1
+
+mpris-progress >$SWAYSOCK.wob
+while [ "$duration" -gt 1 ]; do
+	sleep 0.99
+	mpris-progress >$SWAYSOCK.wob
+	duration="$((duration - 1))"
+done
+
+# vi:ft=sh
