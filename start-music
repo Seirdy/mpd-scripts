@@ -4,7 +4,7 @@
 # background services
 systemctl start --user mpd
 systemctl start --user mpd-mpris
-kunst --notify
+kunst --notify --imv --clear
 
 # frontend programs
 # vi:ft=sh

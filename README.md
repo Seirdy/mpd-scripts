@@ -15,9 +15,9 @@ When forwarding commands to Playerctl, it adds `$HOME/.local/lib` to `$LD_LIBRAR
 `start-music` and `stop-music`
 ------------------------------
 
-`start-music` starts MPD and mpDris2. `stop-music` stops these, as well as [kunst](https://github.com/sdushantha/kunst), [cava](https://github.com/karlstav/cava), [ncmpcpp](https://github.com/arybczak/ncmpcpp), [clerk](https://github.com/carnager/clerk), [cantata-dynamic](https://github.com/CDrummond/cantata/blob/master/playlists/cantata-dynamic), and [projectM](https://github.com/projectM-visualizer/projectm).
+`start-music` starts MPD and mpd-mpris. `stop-music` stops these, as well as [kunst](https://github.com/sdushantha/kunst), [cava](https://github.com/karlstav/cava), [ncmpcpp](https://github.com/arybczak/ncmpcpp), [clerk](https://github.com/carnager/clerk), [cantata-dynamic](https://github.com/CDrummond/cantata/blob/master/playlists/cantata-dynamic), and [projectM](https://github.com/projectM-visualizer/projectm).
 
-MPD, mpDris2, and cantata-dynamic are managed by Systemd. Yes, I know, I know...
+MPD, mpd-mpris, and cantata-dynamic are managed by Systemd. Yes, I know, I know...
 
 Smart playlists
 ---------------
